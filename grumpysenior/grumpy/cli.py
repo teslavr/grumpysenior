@@ -18,9 +18,26 @@ from pathlib import Path
 
 from .config import Config, default_committee, vendor_of
 from .engine import Result, review_source
+from .preflight import (
+    access_denied_message,
+    check,
+    first_run_message,
+    is_first_run,
+    no_credentials_message,
+)
 from .sources import Source, from_file, from_git, from_stdin
 
 SEVERITY_ORDER = {"none": -1, "low": 0, "medium": 1, "high": 2}
+
+
+def explain(failure: str) -> str:
+    """Turn a wall of vendor exceptions into the one sentence that helps."""
+    lowered = failure.lower()
+    if "nocredentials" in lowered or "unable to locate credentials" in lowered:
+        return no_credentials_message()
+    if "accessdenied" in lowered or "not available for this account" in lowered:
+        return access_denied_message()
+    return f"grumpy: {failure}"
 
 
 def build_config(args) -> Config:
@@ -56,6 +73,11 @@ def emit(results: list[Result], fmt: str, out: str | None) -> None:
 
 
 def cmd_review(args) -> int:
+    blocked = check()
+    if blocked:
+        print(blocked, file=sys.stderr)
+        return 2
+    first = is_first_run()
     cfg = build_config(args)
     try:
         sources = collect_sources(args)
@@ -68,6 +90,8 @@ def cmd_review(args) -> int:
         return 0
 
     if not args.quiet:
+        if first:
+            print(first_run_message(), file=sys.stderr)
         print(
             f"the Don:        {cfg.master} ({vendor_of(cfg.master)})\n"
             f"the Commission: {', '.join(cfg.committee)}",
@@ -81,7 +105,7 @@ def cmd_review(args) -> int:
         try:
             result = review_source(cfg, source.label, source.code, surface="cli")
         except RuntimeError as exc:
-            print(f"grumpy: {exc}", file=sys.stderr)
+            print(explain(str(exc)), file=sys.stderr)
             return 2
         if not args.quiet:
             for model, error in result.committee_errors.items():
@@ -149,6 +173,10 @@ def cmd_dashboard(args) -> int:
 def cmd_models(args) -> int:
     from .providers import list_available_models
 
+    blocked = check()
+    if blocked:
+        print(blocked, file=sys.stderr)
+        return 2
     cfg = build_config(args)
     rows = list_available_models(cfg.region)
     if not rows:
@@ -163,6 +191,11 @@ def cmd_models(args) -> int:
 def cmd_mcp(args) -> int:
     from .mcp_server import serve
 
+    blocked = check()
+    if blocked:
+        # Keep serving: an agent should hear why its tool call failed rather
+        # than watch the server vanish.
+        print(blocked, file=sys.stderr)
     serve(build_config(args))
     return 0
 
@@ -170,6 +203,10 @@ def cmd_mcp(args) -> int:
 def cmd_review_pr(args) -> int:
     from .github import GitHubError, changed_files, from_environment, upsert_comment
 
+    blocked = check()
+    if blocked:
+        print(blocked, file=sys.stderr)
+        return 2
     cfg = build_config(args)
     try:
         pr = from_environment()
@@ -194,7 +231,7 @@ def cmd_review_pr(args) -> int:
         try:
             result = review_source(cfg, name, path.read_text(), surface="github-action")
         except RuntimeError as exc:
-            print(f"  · {name}: {exc}", file=sys.stderr)
+            print(explain(str(exc)), file=sys.stderr)
             continue
         worst = max(worst, SEVERITY_ORDER.get(result.worst_severity, -1))
         if result.clean and not result.verdict:

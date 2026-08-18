@@ -77,6 +77,10 @@ grumpy models
 Then point [`.grumpy.yml`](grumpysenior/.grumpy.yml) at the model you write code with.
 The Commission assembles itself from the other vendors.
 
+Run it without a key and it will tell you so — at some length, and with the four steps
+that fix it. Run it with a key but no model access and it will say that instead, because
+those are different problems and only one of them is your fault.
+
 ## Use
 
 ```bash

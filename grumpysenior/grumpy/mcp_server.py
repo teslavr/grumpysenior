@@ -109,10 +109,14 @@ def _handle(cfg: Config, message: dict) -> dict | None:
         try:
             result = _call_tool(cfg, params.get("name", ""), params.get("arguments") or {})
         except Exception as exc:  # tool errors are results, not protocol errors
-            result = {
-                "content": [{"type": "text", "text": f"grumpy failed: {type(exc).__name__}: {exc}"}],
-                "isError": True,
-            }
+            from .preflight import access_denied_message, credentials_present, no_credentials_message
+
+            detail = f"{type(exc).__name__}: {exc}"
+            if not credentials_present():
+                detail = no_credentials_message()
+            elif "accessdenied" in str(exc).lower():
+                detail = access_denied_message()
+            result = {"content": [{"type": "text", "text": detail}], "isError": True}
     elif method and method.startswith("notifications/"):
         return None  # notifications get no reply
     elif request_id is None:
