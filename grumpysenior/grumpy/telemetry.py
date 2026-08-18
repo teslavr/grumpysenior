@@ -1,12 +1,12 @@
 """What we measure, and what we refuse to measure.
 
 The strategy doc names a north-star metric and kill criteria. A product that
-cannot compute them is guessing, so every sit-down writes one event.
+cannot compute them is guessing, so every review writes one event.
 
 **Nothing here touches content.** Not the code, not the file path, not the repo
 name, not the text of a finding, not a model's raw output. A tool whose pitch is
 "your code never leaves your account" does not get to make an exception for its
-own analytics. What we keep is shape: which Families sat, who agreed, what it
+own analytics. What we keep is shape: which reviewers ran, who agreed, what it
 cost, and whether the fix survived verification.
 
 The prototype writes to a local JSONL file and makes no network calls at all.
@@ -61,8 +61,8 @@ def classify_error(message: str) -> str:
     return "other"
 
 
-def record(result, *, surface: str, elapsed_ms: int, don: str, commission: list[str]) -> None:
-    """One line per sit-down. Never raises -- analytics must not break a review."""
+def record(result, *, surface: str, elapsed_ms: int, lead_model: str, reviewers: list[str]) -> None:
+    """One line per review. Never raises -- analytics must not break a review."""
     if DISABLED:
         return
     try:
@@ -74,11 +74,11 @@ def record(result, *, surface: str, elapsed_ms: int, don: str, commission: list[
             # Shape of the input, not the input.
             "file_ext": Path(result.filename).suffix or "none",
             "loc": result.original.count("\n") + 1,
-            # Who sat, and who could not.
-            "don": don,
-            "commission": list(commission),
-            "families_seated": result.review.committee_size,
-            "families_failed": {
+            # Which reviewers ran, and which failed.
+            "lead_model": lead_model,
+            "reviewers": list(reviewers),
+            "reviewers_ok": result.review.committee_size,
+            "reviewers_failed": {
                 model: classify_error(err) for model, err in result.committee_errors.items()
             },
             # Did agreement actually happen? This is the assumption under the product.
@@ -87,17 +87,17 @@ def record(result, *, surface: str, elapsed_ms: int, don: str, commission: list[
             "unanimous": sum(1 for i in issues if i.agreement == result.review.committee_size),
             "corroborated": sum(1 for i in issues if i.agreement >= 2),
             "contested": sum(1 for i in issues if i.contested),
-            "struck_by_don": result.suppressed,
+            "suppressed_by_lead": result.suppressed,
             "severity": {
                 level: sum(1 for i in issues if i.severity == level)
                 for level in ("high", "medium", "low")
             },
-            # Per-Family contribution: who earns their seat.
+            # Per-reviewer contribution: which models are worth their cost.
             "raised_by": {
                 model: sum(
                     1 for i in issues if any(f.model_id == model for f in i.findings)
                 )
-                for model in commission
+                for model in reviewers
             },
             "consolidated_by": result.review.method,
             "fix_offered": bool(result.review.fixed_code),

@@ -105,8 +105,8 @@ def review_source(cfg: Config, filename: str, code: str, *, surface: str = "cli"
         result,
         surface=surface,
         elapsed_ms=telemetry.now_ms() - started,
-        don=cfg.master,
-        commission=cfg.committee,
+        lead_model=cfg.master,
+        reviewers=cfg.committee,
     )
     return result
 

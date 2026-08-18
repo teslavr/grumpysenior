@@ -1,81 +1,92 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Books — GrumpySenior.dev</title>
+<title>Metrics — GrumpySenior.dev</title>
 <style>
 :root {
-  --bg:#faf8f5; --panel:#fff; --ink:#1a1614; --muted:#6b625c; --line:#e6ded5;
-  --accent:#8c1c13; --good:#2d6a4f; --warn:#b5651d;
+  --bg:#f6f7f9; --panel:#fff; --ink:#14181f; --muted:#5f6875; --line:#e2e6eb;
+  --accent:#1f5fa8; --good:#1a7f5a; --warn:#a8631f; --grid:#eef1f5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:#141210; --panel:#1d1a17; --ink:#f0eae4; --muted:#a49a92; --line:#332d28;
-    --accent:#d9534f; --good:#74c69d; --warn:#e0a458;
+    --bg:#0f1216; --panel:#171b21; --ink:#e8ecf1; --muted:#98a2b0; --line:#262c35;
+    --accent:#6aa9e9; --good:#5fc79a; --warn:#e0a458; --grid:#1e242c;
   }
 }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--ink);
-  font:16px/1.6 ui-serif,Georgia,'Times New Roman',serif; }
-.wrap { max-width:1000px; margin:0 auto; padding:48px 24px 80px; }
-h1 { font-size:2.4rem; margin:0 0 4px; letter-spacing:-.02em; }
-.sub { color:var(--muted); font-style:italic; margin:0 0 40px; }
-h2 { font-size:1.05rem; text-transform:uppercase; letter-spacing:.12em;
-  color:var(--muted); margin:48px 0 16px; font-family:ui-sans-serif,system-ui,sans-serif; }
-.grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
-.card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px; }
-.n { font-size:2.3rem; font-weight:600; letter-spacing:-.03em; line-height:1.1; }
-.k { font-size:.8rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
-  font-family:ui-sans-serif,system-ui,sans-serif; margin-top:6px; }
-.q { font-size:.88rem; color:var(--muted); margin-top:10px; font-style:italic; }
+  font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.wrap { max-width:1040px; margin:0 auto; padding:40px 24px 72px; }
+header { border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:8px; }
+h1 { font-size:1.5rem; font-weight:650; margin:0 0 6px; letter-spacing:-.01em; }
+.sub { color:var(--muted); font-size:.9rem; margin:0; max-width:70ch; }
+h2 { font-size:.78rem; font-weight:650; text-transform:uppercase; letter-spacing:.09em;
+  color:var(--muted); margin:36px 0 14px; }
+.grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px; }
+.n { font-size:1.9rem; font-weight:650; letter-spacing:-.02em; line-height:1.15;
+  font-variant-numeric:tabular-nums; }
+.k { font-size:.82rem; font-weight:600; margin-top:2px; }
+.q { font-size:.79rem; color:var(--muted); margin-top:8px; line-height:1.45; }
 .accent { color:var(--accent); } .good { color:var(--good); } .warn { color:var(--warn); }
-table { width:100%; border-collapse:collapse; font-family:ui-sans-serif,system-ui,sans-serif;
-  font-size:.9rem; }
-th,td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); }
-th { font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+.scroll { overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+table { width:100%; border-collapse:collapse; font-size:.86rem; }
+th,td { text-align:left; padding:9px 14px; border-bottom:1px solid var(--line); white-space:nowrap; }
+tr:last-child td { border-bottom:none; }
+th { font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted);
+  background:var(--grid); font-weight:600; }
 td.num { text-align:right; font-variant-numeric:tabular-nums; }
-.scroll { overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
-.bar { height:8px; background:var(--line); border-radius:4px; overflow:hidden; min-width:60px; }
+code { font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.bar { height:6px; background:var(--grid); border-radius:3px; overflow:hidden; min-width:80px; }
 .bar > i { display:block; height:100%; background:var(--accent); }
-footer { margin-top:64px; padding-top:20px; border-top:1px solid var(--line);
-  color:var(--muted); font-size:.85rem; }
-.empty { background:var(--panel); border:1px dashed var(--line); border-radius:10px;
-  padding:40px; text-align:center; color:var(--muted); }
+.note { background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--accent);
+  border-radius:6px; padding:14px 16px; font-size:.85rem; color:var(--muted); margin-top:28px; }
+footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--line);
+  color:var(--muted); font-size:.8rem; }
+.empty { background:var(--panel); border:1px dashed var(--line); border-radius:8px;
+  padding:36px; text-align:center; color:var(--muted); }
 </style></head>
 <body><div class="wrap">
-<h1>The Books</h1>
-<p class="sub">Every sit-down the Commission has held. Numbers only — no code, no paths,
-no findings. Generated 2026-08-18 13:57 UTC.</p>
-<h2>Does the Commission actually agree?</h2><div class='grid'>
-<div class="card"><div class="n accent">100%</div><div class="k">corroborated</div><div class="q">Two or more Families found it. If this collapses, the confidence number is fiction and the product has no floor.</div></div>
-<div class="card"><div class="n ">83%</div><div class="k">unanimous</div><div class="q">Every seated Family found it independently.</div></div>
-<div class="card"><div class="n warn">0%</div><div class="k">the Don dissented</div><div class="q">Kept anyway by the no-veto rule. If these turn out consistently wrong, the rule is noise and should go.</div></div>
-<div class="card"><div class="n ">0</div><div class="k">struck by the Don</div><div class="q">Lone findings he rejected. He is allowed to — for exactly one voice.</div></div>
+<header>
+<h1>GrumpySenior.dev — metrics</h1>
+<p class="sub">Aggregated from the review event log. Each record contains counts only:
+an anonymous install id, which models ran, what they agreed on, and what it cost.
+No source code, file paths, repository names, or finding text are recorded.</p>
+</header>
+<h2>Cross-model agreement</h2><div class='grid'>
+<div class="card"><div class="n accent">100%</div><div class="k">Corroborated findings</div><div class="q">Share of published findings raised independently by two or more reviewers. The core assumption: if independent models do not converge, the confidence score carries no information.</div></div>
+<div class="card"><div class="n ">83%</div><div class="k">Unanimous findings</div><div class="q">Raised by every reviewer that completed the run.</div></div>
+<div class="card"><div class="n warn">0%</div><div class="k">Contested findings</div><div class="q">Corroborated by reviewers but rejected by the lead model, and published anyway. Measures whether the consensus rule adds signal or noise.</div></div>
+<div class="card"><div class="n ">0</div><div class="k">Suppressed</div><div class="q">Single-reviewer findings the lead model rejected. Permitted below the consensus threshold.</div></div>
 </div>
-<h2>Do the fixes hold up?</h2><div class='grid'>
-<div class="card"><div class="n ">67%</div><div class="k">sit-downs with an offer</div><div class="q">A concrete corrected file, not just complaints.</div></div>
-<div class="card"><div class="n good">100%</div><div class="k">offers that verified</div><div class="q">Parsed, and passed the configured check. Broken fixes are never shown — this is the anti-hallucination gate.</div></div>
-<div class="card"><div class="n ">6</div><div class="k">issues published</div><div class="q">Across every sit-down.</div></div>
-<div class="card"><div class="n ">24.6s</div><div class="k">median sit-down</div><div class="q">Wall clock, full Commission.</div></div>
+<h2>Fix quality</h2><div class='grid'>
+<div class="card"><div class="n ">50%</div><div class="k">Reviews with a fix</div><div class="q">Share of reviews that produced a concrete corrected file.</div></div>
+<div class="card"><div class="n good">100%</div><div class="k">Fixes verified</div><div class="q">Share of proposed fixes that parsed and passed the configured check. Unverified fixes are withheld. Proxy for merge rate until merge tracking exists.</div></div>
+<div class="card"><div class="n ">6</div><div class="k">Findings published</div><div class="q">Total across all reviews.</div></div>
+<div class="card"><div class="n ">16.1s</div><div class="k">Median duration</div><div class="q">Wall clock, full reviewer set.</div></div>
 </div>
-<h2>Does anyone come back?</h2><div class='grid'>
-<div class="card"><div class="n ">1</div><div class="k">installs</div><div class="q">Distinct anonymous install ids.</div></div>
-<div class="card"><div class="n ">3</div><div class="k">sit-downs</div><div class="q">Total reviews run.</div></div>
-<div class="card"><div class="n ">3.0</div><div class="k">per install</div><div class="q">Novelty use looks like 1.0 and stays there.</div></div>
-<div class="card"><div class="n accent">100%</div><div class="k">came back</div><div class="q">Installs with more than one review. The clearest kill signal.</div></div>
+<h2>Adoption and retention</h2><div class='grid'>
+<div class="card"><div class="n ">1</div><div class="k">Installs</div><div class="q">Distinct anonymous install identifiers.</div></div>
+<div class="card"><div class="n ">4</div><div class="k">Reviews</div><div class="q">Total reviews run.</div></div>
+<div class="card"><div class="n ">4.0</div><div class="k">Reviews per install</div><div class="q">Trial-only usage sits near 1.0 and does not move.</div></div>
+<div class="card"><div class="n accent">100%</div><div class="k">Repeat rate</div><div class="q">Installs with more than one review. Primary retention signal and a stated kill criterion.</div></div>
 </div>
-<h2>Which Families earn their seat?</h2><div class='scroll'><table>
-<tr><th>Family</th><th class='num'>sat</th><th class='num'>findings</th><th class='num'>per sitting</th><th class='num'>failed</th><th>failure rate</th></tr>
-<tr><td><code>us.mistral.pixtral-large-2502-v1:0</code></td><td class='num'>3</td><td class='num'>6</td><td class='num'>2.0</td><td class='num'>0</td><td><div class='bar'><i style='width:100%'></i></div><small>0%</small></td></tr>
-<tr><td><code>us.deepseek.r1-v1:0</code></td><td class='num'>3</td><td class='num'>6</td><td class='num'>2.0</td><td class='num'>0</td><td><div class='bar'><i style='width:100%'></i></div><small>0%</small></td></tr>
-<tr><td><code>us.meta.llama3-3-70b-instruct-v1:0</code></td><td class='num'>3</td><td class='num'>5</td><td class='num'>1.67</td><td class='num'>0</td><td><div class='bar'><i style='width:84%'></i></div><small>0%</small></td></tr>
+<h2>Reviewer performance</h2><div class='scroll'><table>
+<tr><th>Model</th><th class='num'>Runs</th><th class='num'>Findings</th><th class='num'>Per run</th><th class='num'>Failures</th><th>Relative yield</th></tr>
+<tr><td><code>us.mistral.pixtral-large-2502-v1:0</code></td><td class='num'>4</td><td class='num'>6</td><td class='num'>1.5</td><td class='num'>0</td><td><div class='bar'><i style='width:100%'></i></div></td></tr>
+<tr><td><code>us.deepseek.r1-v1:0</code></td><td class='num'>4</td><td class='num'>6</td><td class='num'>1.5</td><td class='num'>0</td><td><div class='bar'><i style='width:100%'></i></div></td></tr>
+<tr><td><code>us.meta.llama3-3-70b-instruct-v1:0</code></td><td class='num'>4</td><td class='num'>5</td><td class='num'>1.25</td><td class='num'>0</td><td><div class='bar'><i style='width:83%'></i></div></td></tr>
 </table></div>
-<h2>How it gets called</h2><div class='scroll'><table>
-<tr><th>surface</th><th class='num'>sit-downs</th></tr>
-<tr><td>cli</td><td class='num'>3</td></tr>
+<div class="note">Yield per run and failure rate determine which models justify their cost. This is the input to routing: a model that contributes few unique findings, or fails to return usable output, can be dropped from the default set without weakening cross-vendor coverage.</div>
+<h2>Findings by severity</h2><div class='scroll'><table>
+<tr><th>Severity</th><th class='num'>Findings</th></tr>
+<tr><td>high</td><td class='num'>3</td></tr>
+<tr><td>medium</td><td class='num'>2</td></tr>
+<tr><td>low</td><td class='num'>1</td></tr>
 </table></div>
-<footer>
-GrumpySenior.dev · records are anonymous by construction: an install id, which models
-sat, what they agreed on, what it cost. Nothing about the code itself is ever written
-down, which is why this page can be public.
-</footer>
+<h2>Invocation surface</h2><div class='scroll'><table>
+<tr><th>Surface</th><th class='num'>Reviews</th></tr>
+<tr><td>cli</td><td class='num'>4</td></tr>
+</table></div>
+<footer>Generated 2026-08-18 18:32 UTC · 4 reviews on record</footer>
 </div></body></html>

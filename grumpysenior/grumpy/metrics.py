@@ -1,7 +1,7 @@
-"""Turning the event log into the numbers the strategy doc promised.
+"""Aggregation of the event log into the metrics named in the strategy doc.
 
-Each metric here answers a question that was written down before the data
-existed -- which is the only way a metric is worth anything.
+Each metric answers a question that was written down before the data existed,
+and each maps to a decision: ship, tune, or kill.
 """
 from __future__ import annotations
 
@@ -15,22 +15,23 @@ class Metrics:
     users: int = 0
     files_reviewed: int = 0
     total_issues: int = 0
-    # "Do vendors describe the same defect similarly enough to agree?"
-    # If this collapses, the product has no floor. It is the first kill signal.
+    # Do independent vendors describe the same defect similarly enough to be
+    # matched? If this collapses, the confidence score is meaningless. First kill signal.
     corroboration_rate: float = 0.0
     unanimity_rate: float = 0.0
-    # "Does the no-veto rule earn its keep, or is it just noise?"
+    # Findings the lead model rejected but the consensus rule kept. Measures
+    # whether that rule adds signal or noise.
     contested_rate: float = 0.0
-    struck_by_don: int = 0
-    # "Do fixes survive mechanical verification?" -- proxy for the north star
-    # until merge tracking exists.
+    suppressed_by_lead: int = 0
+    # Share of proposed fixes that survive mechanical verification. Proxy for the
+    # north-star metric (merge rate) until merge tracking exists.
     fix_offer_rate: float = 0.0
     fix_verified_rate: float = 0.0
-    # "Does anyone come back?"
+    # Retention.
     runs_per_user: float = 0.0
     repeat_user_rate: float = 0.0
     median_seconds: float = 0.0
-    per_family: dict = field(default_factory=dict)
+    per_reviewer: dict = field(default_factory=dict)
     failures: Counter = field(default_factory=Counter)
     severity: Counter = field(default_factory=Counter)
     surfaces: Counter = field(default_factory=Counter)
@@ -63,7 +64,7 @@ def compute(events: list[dict]) -> Metrics:
         m.corroboration_rate = round(sum(e.get("corroborated", 0) for e in events) / issues, 2)
         m.unanimity_rate = round(sum(e.get("unanimous", 0) for e in events) / issues, 2)
         m.contested_rate = round(sum(e.get("contested", 0) for e in events) / issues, 2)
-    m.struck_by_don = sum(e.get("struck_by_don", 0) for e in events)
+    m.suppressed_by_lead = sum(e.get("suppressed_by_lead", 0) for e in events)
 
     offered = [e for e in events if e.get("fix_offered")]
     m.fix_offer_rate = round(len(offered) / m.runs, 2)
@@ -78,11 +79,11 @@ def compute(events: list[dict]) -> Metrics:
     raised: Counter = Counter()
     failed: Counter = Counter()
     for e in events:
-        for model in e.get("commission", []):
+        for model in e.get("reviewers", []):
             seated[model] += 1
         for model, count in (e.get("raised_by") or {}).items():
             raised[model] += count
-        for model, reason in (e.get("families_failed") or {}).items():
+        for model, reason in (e.get("reviewers_failed") or {}).items():
             failed[model] += 1
             m.failures[reason] += 1
         for level, count in (e.get("severity") or {}).items():
@@ -92,12 +93,12 @@ def compute(events: list[dict]) -> Metrics:
         if day:
             m.by_day[day] = m.by_day.get(day, 0) + 1
 
-    # Per-Family: does this seat earn its keep, or does it mostly fail to show?
-    m.per_family = {
+    # Per-reviewer yield and reliability: which models justify their cost.
+    m.per_reviewer = {
         model: {
-            "sat": seated[model],
+            "runs": seated[model],
             "findings": raised.get(model, 0),
-            "findings_per_sitting": round(raised.get(model, 0) / seated[model], 2) if seated[model] else 0.0,
+            "findings_per_run": round(raised.get(model, 0) / seated[model], 2) if seated[model] else 0.0,
             "failures": failed.get(model, 0),
             "failure_rate": round(failed.get(model, 0) / seated[model], 2) if seated[model] else 0.0,
         }

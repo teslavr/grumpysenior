@@ -105,35 +105,35 @@ def cmd_review(args) -> int:
 
 
 def cmd_stats(args) -> int:
-    """The Books, in the terminal."""
+    """Review metrics, in the terminal."""
     from .metrics import compute
     from .telemetry import EVENTS, load
 
     m = compute(load(Path(args.log) if args.log else None))
     if not m.runs:
-        print(f"No sit-downs on record ({EVENTS}). Run a review first.")
+        print(f"No reviews recorded ({EVENTS}). Run a review first.")
         return 0
     pct = lambda x: f"{round(x * 100)}%"
-    print(f"sit-downs {m.runs} · installs {m.users} · {m.runs_per_user} per install · "
-          f"{pct(m.repeat_user_rate)} came back")
-    print(f"issues {m.total_issues} · corroborated {pct(m.corroboration_rate)} · "
+    print(f"reviews {m.runs} · installs {m.users} · {m.runs_per_user} per install · "
+          f"repeat rate {pct(m.repeat_user_rate)}")
+    print(f"findings {m.total_issues} · corroborated {pct(m.corroboration_rate)} · "
           f"unanimous {pct(m.unanimity_rate)} · contested {pct(m.contested_rate)} · "
-          f"struck {m.struck_by_don}")
-    print(f"fixes offered {pct(m.fix_offer_rate)} · verified {pct(m.fix_verified_rate)} · "
+          f"suppressed {m.suppressed_by_lead}")
+    print(f"fixes proposed {pct(m.fix_offer_rate)} · verified {pct(m.fix_verified_rate)} · "
           f"median {m.median_seconds}s")
-    if m.per_family:
-        print("\nFamily                                        sat  finds  /sit  fail")
-        for model, d in sorted(m.per_family.items(),
-                               key=lambda kv: kv[1]["findings_per_sitting"], reverse=True):
-            print(f"  {model:<42} {d['sat']:>4} {d['findings']:>6} "
-                  f"{d['findings_per_sitting']:>5} {d['failures']:>5}")
+    if m.per_reviewer:
+        print("\nreviewer                                     runs  finds  /run  fail")
+        for model, d in sorted(m.per_reviewer.items(),
+                               key=lambda kv: kv[1]["findings_per_run"], reverse=True):
+            print(f"  {model:<42} {d['runs']:>4} {d['findings']:>6} "
+                  f"{d['findings_per_run']:>5} {d['failures']:>5}")
     if m.failures:
-        print("\ndrop-outs: " + ", ".join(f"{k}={v}" for k, v in m.failures.most_common()))
+        print("\nfailures: " + ", ".join(f"{k}={v}" for k, v in m.failures.most_common()))
     return 0
 
 
 def cmd_dashboard(args) -> int:
-    """Generate The Books as one self-contained page, for GitHub Pages."""
+    """Render the metrics page as one self-contained file, for GitHub Pages."""
     from .dashboard import render
     from .metrics import compute
     from .telemetry import load
@@ -241,11 +241,11 @@ def main(argv: list[str] | None = None) -> int:
     review.add_argument("-q", "--quiet", action="store_true", help="no progress on stderr")
     review.set_defaults(func=cmd_review)
 
-    stats = sub.add_parser("stats", help="the Books: usage metrics from the local event log")
+    stats = sub.add_parser("stats", help="review metrics from the local event log")
     stats.add_argument("--log", help="path to events.jsonl (default ~/.grumpy/events.jsonl)")
     stats.set_defaults(func=cmd_stats)
 
-    dash = sub.add_parser("dashboard", help="render the Books as a self-contained HTML page")
+    dash = sub.add_parser("dashboard", help="render the metrics page as self-contained HTML")
     dash.add_argument("--out", default="docs/index.html")
     dash.add_argument("--log", help="path to events.jsonl")
     dash.set_defaults(func=cmd_dashboard)

@@ -1,6 +1,6 @@
-# The Books. Pages serves /docs from main directly, so this job only has to
-# regenerate the page when the event log changes and commit the result.
-name: The Books
+# Pages serves /docs from main directly, so this job only regenerates the
+# metrics page when the event log changes and commits the result.
+name: Metrics page
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: the-books
+  group: metrics-page
   cancel-in-progress: true
 
 jobs:
@@ -33,14 +33,14 @@ jobs:
       # in there — which is the only reason this page is allowed to be public.
       - run: grumpy dashboard --log docs/events.jsonl --out docs/index.html
 
-      - name: Commit if the numbers moved
+      - name: Commit if the metrics changed
         run: |
           if git diff --quiet docs/index.html; then
-            echo "The Books are unchanged."
+            echo "Metrics unchanged."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/index.html
-          git commit -m "The Books: rebuild from the event log"
+          git commit -m "Rebuild metrics page from the event log"
           git push

@@ -1,19 +1,20 @@
-# The Books
+# Metrics
 
-`index.html` is the analytics page, served by GitHub Pages. It is generated — do not
-edit it by hand:
+`index.html` is the metrics page, served by GitHub Pages. It is generated — do not edit
+it by hand:
 
 ```bash
 grumpy dashboard --log docs/events.jsonl --out docs/index.html
 ```
 
-`events.jsonl` is the event log. **One line per sit-down, and it contains no content**:
-an anonymous install id, which models sat, how many findings were corroborated, whether
-the fix verified, and how long it took. No source code, no file paths, no repository
-names, no finding text — a tool that promises your code stays in your account does not
-get an exception for its own analytics.
+`events.jsonl` is the review event log: one record per review, containing counts only —
+an anonymous install id, which models ran, how many findings were corroborated, whether
+the proposed fix verified, and how long the review took. No source code, file paths,
+repository names, or finding text is recorded.
 
-That constraint is what makes this page publishable at all. It was designed into the
-schema before the first chart existed, rather than bolted on after someone asked.
+That constraint is what makes the page publishable. It was designed into the schema
+before the first chart existed rather than added afterwards: a tool whose argument is
+that source code stays inside the customer's own account cannot make an exception for
+its own telemetry.
 
-Local telemetry is off with `GRUMPY_NO_TELEMETRY=1`, and lives in `~/.grumpy/`.
+Local telemetry writes to `~/.grumpy/` and is disabled with `GRUMPY_NO_TELEMETRY=1`.
