@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -126,6 +127,72 @@ def cmd_review(args) -> int:
     floor = SEVERITY_ORDER.get(args.fail_on, 99)
     worst = max((SEVERITY_ORDER.get(r.worst_severity, -1) for r in results), default=-1)
     return 1 if worst >= floor else 0
+
+
+def cmd_doctor(args) -> int:
+    """Answer one question: will a review work right now, and if not, why."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from .preflight import credentials_present, load_env_file
+    from .providers import ModelError, converse, runtime_client
+
+    load_env_file()
+    cfg = build_config(args)
+    ok = True
+
+    print("credentials")
+    if credentials_present():
+        source = ("AWS_BEARER_TOKEN_BEDROCK" if os.environ.get("AWS_BEARER_TOKEN_BEDROCK")
+                  else "AWS_ACCESS_KEY_ID" if os.environ.get("AWS_ACCESS_KEY_ID")
+                  else "profile or instance role")
+        print(f"  ✅ found ({source}), region {cfg.region}")
+    else:
+        print("  ❌ none found")
+        print(no_credentials_message(), file=sys.stderr)
+        return 2
+
+    print("\nmodels — one cheap call each")
+    client = runtime_client(cfg.region)
+
+    def probe(model: str) -> tuple[str, bool, str]:
+        try:
+            converse(client, model, "Reply with one word.",
+                     "Say OK", max_tokens=200)
+            return model, True, ""
+        except ModelError as exc:
+            note = str(exc).split(":", 1)[-1].strip()
+            return model, False, note[:80]
+        except Exception as exc:
+            return model, False, f"{type(exc).__name__}: {exc}"[:80]
+
+    roles = [(cfg.master, "the Don")] + [(m, "Commission") for m in cfg.committee]
+    with ThreadPoolExecutor(max_workers=max(1, len(roles))) as pool:
+        results = list(pool.map(lambda r: probe(r[0]), roles))
+
+    working_vendors = set()
+    for (model, role), (_, good, note) in zip(roles, results):
+        if good:
+            print(f"  ✅ {model:<45} {role}")
+            working_vendors.add(vendor_of(model))
+        else:
+            ok = False
+            print(f"  ❌ {model:<45} {role}")
+            print(f"     {note}")
+
+    print("\nverdict")
+    if ok:
+        others = working_vendors - {vendor_of(cfg.master)}
+        if len(others) >= 2:
+            print(f"  ✅ ready — {len(others)} vendors on the Commission, plus your own model")
+        else:
+            ok = False
+            print(f"  ⚠️  only {len(others)} vendor(s) besides your own can be reached.")
+            print("     Agreement between models that share a vendor means little.")
+            print("     Enable models from at least two others: grumpy models")
+    else:
+        print("  ❌ not ready. Enable the failing models, or replace them in .grumpy.yml.")
+        print("     `grumpy models` lists what this account and region offer.")
+    return 0 if ok else 1
 
 
 def cmd_stats(args) -> int:
@@ -279,6 +346,9 @@ def main(argv: list[str] | None = None) -> int:
     review.add_argument("--out", help="write to a file instead of stdout")
     review.add_argument("-q", "--quiet", action="store_true", help="no progress on stderr")
     review.set_defaults(func=cmd_review)
+
+    doctor = sub.add_parser("doctor", help="check that a review would work right now")
+    doctor.set_defaults(func=cmd_doctor)
 
     stats = sub.add_parser("stats", help="review metrics from the local event log")
     stats.add_argument("--log", help="path to events.jsonl (default ~/.grumpy/events.jsonl)")

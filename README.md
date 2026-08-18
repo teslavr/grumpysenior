@@ -77,6 +77,16 @@ grumpy models
 Then point [`.grumpy.yml`](grumpysenior/.grumpy.yml) at the model you write code with.
 The Commission assembles itself from the other vendors.
 
+Then check the whole thing works before trusting it with anything:
+
+```bash
+grumpy doctor
+```
+
+It verifies the credentials, makes one cheap call to every model you configured, and
+says plainly whether a review would succeed — and warns you if fewer than two other
+vendors can be reached, because agreement among models from one vendor means little.
+
 Run it without a key and it will tell you so — at some length, and with the four steps
 that fix it. Run it with a key but no model access and it will say that instead, because
 those are different problems and only one of them is your fault.
