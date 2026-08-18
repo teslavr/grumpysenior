@@ -190,8 +190,17 @@ def cmd_doctor(args) -> int:
             print("     Agreement between models that share a vendor means little.")
             print("     Enable models from at least two others: grumpy models")
     else:
-        print("  ❌ not ready. Enable the failing models, or replace them in .grumpy.yml.")
-        print("     `grumpy models` lists what this account and region offer.")
+        denied = any(
+            "not available" in note.lower() or "accessdenied" in note.lower()
+            for _, good, note in results if not good
+        )
+        print("  ❌ not ready.")
+        if denied:
+            print("     A model refused you. Two possible causes, fixed in different places:")
+            print("       · the key lacks permission — reissue it with AmazonBedrockFullAccess")
+            print("       · the model is not enabled — Bedrock console → Model access")
+        print("     `grumpy models` lists what this account and region offer;")
+        print("     put the ids that answer into .grumpy.yml.")
     return 0 if ok else 1
 
 

@@ -80,32 +80,44 @@ NO_CREDENTIALS = """
 
 {rule}
 
-  1. A Bedrock API key is the short way in — no IAM console, no roles:
+  1. Generate a Bedrock API key — the short way in, no IAM console,
+     no roles to assume:
 
        https://console.aws.amazon.com/bedrock  →  API keys  →  Generate
 
-  2. Put it somewhere this tool will find it. Either export it:
+     ⚠ When it asks about permissions, grant **AmazonBedrockFullAccess**.
+       The narrower default lets the key authenticate and then refuses
+       every model call, which looks like a broken tool rather than a
+       missing permission. This is the step people get wrong.
+
+  2. Put it where this tool will find it. Either export it:
 
        export AWS_BEARER_TOKEN_BEDROCK=ABSK...
        export AWS_REGION=us-east-1
 
-     or drop those two lines in ~/.grumpy.env and forget about it —
-     that file is read automatically, and never overrides a real
-     environment variable.
+     or write those two lines into ~/.grumpy.env and forget about it —
+     that file is read automatically and never overrides a real
+     environment variable:
+
+       printf 'export AWS_BEARER_TOKEN_BEDROCK=ABSK...\n'\
+              'export AWS_REGION=us-east-1\n' > ~/.grumpy.env
+       chmod 600 ~/.grumpy.env
 
      Long-lived credentials work too: AWS_ACCESS_KEY_ID and
      AWS_SECRET_ACCESS_KEY, an AWS_PROFILE, or an instance role.
 
-  3. Turn the models on. Access is off by default, per account and
-     per region:
+  3. Enable the models. Access is off by default, granted per account
+     and per region, and this is separate from the key's permissions:
 
        https://console.aws.amazon.com/bedrock  →  Model access
+                                              →  Modify model access
 
-  4. Ask the account what it will actually let you call:
+     Enable at least two vendors besides the one you write code with.
+     Some are region-locked or country-locked; Bedrock will say so.
 
-       grumpy models
+  4. Confirm the whole chain before trusting it:
 
-  Then run your review again. The Commission will be seated.
+       grumpy doctor
 
 {rule}
 """
@@ -115,16 +127,31 @@ ACCESS_DENIED = """
 
   The key is good. The door is not open.
 
-  Your account authenticated, but the models the Commission needs are
-  not enabled for it. Bedrock ships with model access switched off, and
-  it is granted per account, per region — sometimes per country.
+  Your credentials authenticated. The models did not answer. There are
+  exactly two reasons for that, and they are fixed in different places:
 
-    1.  https://console.aws.amazon.com/bedrock  →  Model access
-    2.  grumpy models            # what this account can call today
-    3.  put the working ids in .grumpy.yml
+  1. The key lacks permission.
+     A Bedrock API key generated with the narrow default can call
+     almost nothing. Reissue it with **AmazonBedrockFullAccess**, or
+     attach that policy to the IAM identity you are using:
 
-  A Commission of one vendor is not a Commission. Enable models from at
-  least two, or the agreement numbers mean nothing.
+       https://console.aws.amazon.com/bedrock  →  API keys
+
+  2. The models are not enabled in this account and region.
+     Bedrock ships with model access switched off. It is granted per
+     account, per region, and some models are restricted by country:
+
+       https://console.aws.amazon.com/bedrock  →  Model access
+                                              →  Modify model access
+
+  Then:
+
+       grumpy models      # what this account and region will serve
+       grumpy doctor      # whether your configured models answer
+
+  Put the ids that work into .grumpy.yml. A Commission drawn from one
+  vendor is not a Commission — models that share a vendor share their
+  blind spots, and their agreement is not evidence of anything.
 
 {rule}
 """

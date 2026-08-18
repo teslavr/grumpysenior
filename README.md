@@ -67,8 +67,25 @@ it. So the floor is enforced in code, not requested in a prompt.
 pip install -e ./grumpysenior
 ```
 
-Reviewers run through AWS Bedrock — one credential, every vendor. Model access is **off
-by default** and varies by account and region, so start here:
+Reviewers run through AWS Bedrock — one credential, every vendor.
+
+Generate a **Bedrock API key** (console → Bedrock → API keys) and grant it
+**`AmazonBedrockFullAccess`**. The narrower default lets the key authenticate and then
+refuses every model call, which reads as a broken tool rather than a missing permission;
+it is the step people get wrong. Then enable the models themselves — access is **off by
+default**, granted per account and per region, and separate from the key's permissions:
+console → Bedrock → **Model access**. Turn on at least two vendors besides the one you
+write code with.
+
+Put the key where the tool will find it:
+
+```bash
+printf 'export AWS_BEARER_TOKEN_BEDROCK=ABSK...\nexport AWS_REGION=us-east-1\n' > ~/.grumpy.env
+chmod 600 ~/.grumpy.env
+```
+
+That file is read automatically and never overrides a real environment variable. Then
+see what your account will actually serve:
 
 ```bash
 grumpy models
