@@ -1,17 +1,6 @@
-# What I cut for time
+# Known limitations and what comes next
 
-## The timebox, honestly
-
-The four-hour version of this is the two documents plus a script that calls three
-models on a hardcoded diff and prints the result. That existed, and it worked.
-
-I kept going past it, and I'd rather say so than pretend the scope fit. The reason is
-specific: once the Commission was sitting, the thing I wanted was not a demo of it —
-it was to have it. So it became a CLI I can point at any file, an MCP server my own
-coding agent calls, and a PR bot. If that reads as failing to respect a timebox, fair.
-I'd make the same call again, and the working tool is the argument.
-
-## What I deliberately did not build
+## Not built, deliberately
 
 **Diff-awareness.** It reviews whole files or explicit line ranges, not hunks. On a
 large PR it reads the file rather than only what changed — more tokens, and occasional
@@ -31,8 +20,8 @@ didn't want to hand-roll under time pressure.
 
 **Learning from outcomes.** Nothing records which proposed fixes were merged. That
 signal is the north-star metric in the strategy doc *and* the obvious training loop for
-per-repo tuning — which Families to trust, which severities to suppress. It is the
-highest-value thing not here, and it needs persistence, which the brief said I could skip.
+per-repo tuning — which reviewers to trust, which severities to suppress. It is the
+highest-value thing missing, and the next substantial piece of work.
 
 **Cost and latency routing.** Every sit-down seats the full Commission. It should run one
 cheap model on a trivial diff and the full panel only on risky ones. Easy, but it is a
@@ -42,13 +31,12 @@ tuning problem and tuning without usage data is guessing.
 mechanically verified. Everything else ships labelled `unverified`, which is honest but
 weaker.
 
-**A UI.** There is a terminal and a PR comment. The brief said not to over-index on
-pixel-perfect CSS, and I took that as permission rather than an instruction.
+**A UI.** There is a terminal, a PR comment, and a metrics page. Nothing else is
+planned: the surfaces developers already live in are the point.
 
-## What I cut and then put back
+## An engineering note: the weakest reviewer sets the ceiling
 
-**Tolerant JSON parsing.** The first live run dropped a Family because Llama
-returned malformed JSON — it had been asked to embed a whole source file inside a JSON
+The first live run dropped a reviewer because Llama returned malformed JSON — it had been asked to embed a whole source file inside a JSON
 string, and did not escape the newlines. I patched the parser, and the patch made it
 worse: two members failed on the next run.
 
@@ -60,7 +48,7 @@ I am including this because the failure is the interesting part. A cross-model p
 lives or dies on its weakest Family, and "make the strong model work"
 is not the same problem as "make every vendor work."
 
-## Where I spent the time instead
+## The decision everything else serves
 
 On the one decision the product stands on: **the Don consolidates but cannot
 silently overrule the Commission.** Getting that boundary right — and building the

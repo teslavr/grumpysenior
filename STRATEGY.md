@@ -1,4 +1,4 @@
-# GrumpySenior.dev — Product & Strategy
+# Product strategy
 
 **The Commission sits on your code: five Families, five different models, five different
 vendors, none of whom take each other's word for anything. Your own Don presides — and
@@ -64,10 +64,10 @@ which makes the pitch short.
 **Not for:** solo hobbyists with no review step at all, and — until a local-model
 deployment path exists — teams who cannot send source code to a third party.
 
-## Form factor: neither of the two on offer
+## Form factor: not an IDE plugin, not only a PR bot
 
-The brief offered an IDE extension or a PR-reviewer bot. Both are true, and both are
-the wrong unit to build first.
+The obvious places to put this are an IDE extension or a pull-request bot. Both are
+useful, and both are the wrong unit to build first.
 
 The product is a reasoning loop; the form factor is a distribution question. So the
 loop ships as **a CLI with an honest contract** — a file, a chunk, a snippet on stdin,

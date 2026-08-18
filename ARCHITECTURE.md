@@ -1,4 +1,4 @@
-# GrumpySenior.dev — System Architecture
+# Architecture
 
 ## The sit-down
 
@@ -95,7 +95,7 @@ nothing to escape. Consensus went 2/3 → 3/3 and the run got twice as fast.
 A cross-vendor product lives or dies on its weakest member. "Make the strong model work"
 and "make every vendor work" are different problems, and the second one is the product.
 
-## Prototype vs product
+## What exists, and what does not
 
 **Built and working, verified against live models:** stages 1–6, all four triggers, the
 no-veto rule, verification, the MCP server, the PR bot.
