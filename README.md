@@ -1,6 +1,25 @@
-# Opera — "AI Product Builder" Case Study · GrumpySenior.dev
+# GrumpySenior.dev
 
-Sergei Lavrinenko's take-home for the Opera AI Product Builder role.
+```
+                     ▄▄▄▄▄▄▄▄▄▄
+                   ▟██████████████▙
+                  ██████████████████
+            ▗▄▄▄▄████████████████████▄▄▄▄▖
+            ▝▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▘
+                   ▐████████████▌
+                   ▐████████████▌
+                    ▝██████████▘
+                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+               ▄████████▛▘▝▜████████▄
+             ▟██████████▏▟▙▕██████████▙
+            ████████████ ▜▛ ████████████
+           ██████████████▐▌██████████████
+```
+
+> **He presides. He does not decide.** Your own model runs the review — and is the one
+> model in the room forbidden from quietly overruling the rest.
+
+Sergei Lavrinenko's take-home for the Opera **AI Product Builder** role.
 
 ## Deliverables
 
