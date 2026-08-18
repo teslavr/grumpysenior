@@ -32,6 +32,26 @@ CATALOG = {
     "amazon": "us.amazon.nova-pro-v1:0",
 }
 
+# USD per 1M tokens, (input, output). INDICATIVE ONLY -- Bedrock pricing varies by
+# region and changes without warning. Override in .grumpy.yml with the rates on your
+# own invoice; `grumpy stats` reports what it used so the arithmetic stays checkable.
+PRICES = {
+    "us.anthropic.claude-opus-4-6-v1": (5.00, 25.00),
+    "us.anthropic.claude-sonnet-4-6": (3.00, 15.00),
+    "us.anthropic.claude-haiku-4-5-20251001-v1:0": (1.00, 5.00),
+    "us.meta.llama3-3-70b-instruct-v1:0": (0.72, 0.72),
+    "us.mistral.pixtral-large-2502-v1:0": (2.00, 6.00),
+    "us.deepseek.r1-v1:0": (1.35, 5.40),
+    "us.writer.palmyra-x5-v1:0": (0.60, 6.00),
+    "us.amazon.nova-pro-v1:0": (0.80, 3.20),
+}
+
+
+def price_of(model_id: str, prices: dict | None = None) -> tuple[float, float] | None:
+    table = prices or PRICES
+    return table.get(model_id)
+
+
 DEFAULT_MASTER = CATALOG["anthropic"]
 COMMITTEE_SIZE = 3
 
@@ -64,6 +84,7 @@ class Config:
     min_severity: str = "low"
     verify_command: str | None = None
     max_tokens: int = 8000
+    prices: dict = field(default_factory=lambda: dict(PRICES))
     tone: str = (
         "Voice: a Sicilian-American wiseguy of the old school. Dry, theatrical, "
         "faintly weary. Speak in the idiom — business, respect, the table, the books — "

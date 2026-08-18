@@ -15,9 +15,40 @@ from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from .telemetry import HOME
 
 
+ENV_FILE = Path.home() / ".grumpy.env"
+
+
+def load_env_file() -> None:
+    """Read ~/.grumpy.env if it exists, without overriding a real environment.
+
+    Having to `source` something before every review is the kind of friction
+    that quietly kills a tool. The file is the user's own, mode 600 by
+    convention, and anything already exported wins.
+    """
+    if not ENV_FILE.exists():
+        return
+    try:
+        for line in ENV_FILE.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export "):]
+            key, sep, value = line.partition("=")
+            if not sep:
+                continue
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+    except OSError:
+        pass
+
+
 def credentials_present() -> bool:
     """Any credential Bedrock will accept: a Bedrock API key, static keys, a
     profile, an assumed role, or instance metadata."""
+    load_env_file()
     if os.environ.get("AWS_BEARER_TOKEN_BEDROCK"):
         return True
     if os.environ.get("AWS_ACCESS_KEY_ID") and os.environ.get("AWS_SECRET_ACCESS_KEY"):
@@ -53,12 +84,16 @@ NO_CREDENTIALS = """
 
        https://console.aws.amazon.com/bedrock  →  API keys  →  Generate
 
-  2. Put it where every tool looks for it:
+  2. Put it somewhere this tool will find it. Either export it:
 
        export AWS_BEARER_TOKEN_BEDROCK=ABSK...
        export AWS_REGION=us-east-1
 
-     Long-lived credentials work too — AWS_ACCESS_KEY_ID and
+     or drop those two lines in ~/.grumpy.env and forget about it —
+     that file is read automatically, and never overrides a real
+     environment variable.
+
+     Long-lived credentials work too: AWS_ACCESS_KEY_ID and
      AWS_SECRET_ACCESS_KEY, an AWS_PROFILE, or an instance role.
 
   3. Turn the models on. Access is off by default, per account and

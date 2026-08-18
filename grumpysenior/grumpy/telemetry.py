@@ -61,7 +61,16 @@ def classify_error(message: str) -> str:
     return "other"
 
 
-def record(result, *, surface: str, elapsed_ms: int, lead_model: str, reviewers: list[str]) -> None:
+def record(
+    result,
+    *,
+    surface: str,
+    elapsed_ms: int,
+    lead_model: str,
+    reviewers: list[str],
+    usage: dict | None = None,
+    prices: dict | None = None,
+) -> None:
     """One line per review. Never raises -- analytics must not break a review."""
     if DISABLED:
         return
@@ -103,6 +112,19 @@ def record(result, *, surface: str, elapsed_ms: int, lead_model: str, reviewers:
             "fix_offered": bool(result.review.fixed_code),
             "fix_status": result.verdict.label if result.verdict else "none",
             "elapsed_ms": elapsed_ms,
+            # Tokens per model, and the cost that follows from them. Rates are
+            # whatever the config says, so the arithmetic can be re-checked
+            # against a real invoice later.
+            "tokens": {m: {"in": i, "out": o} for m, (i, o) in (usage or {}).items()},
+            "cost_usd": round(
+                sum(
+                    (i * p_in + o * p_out) / 1_000_000
+                    for m, (i, o) in (usage or {}).items()
+                    if (rate := (prices or {}).get(m))
+                    for p_in, p_out in [rate]
+                ),
+                6,
+            ),
         }
         HOME.mkdir(parents=True, exist_ok=True)
         with EVENTS.open("a") as handle:

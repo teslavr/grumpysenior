@@ -85,6 +85,12 @@ def review_source(cfg: Config, filename: str, code: str, *, surface: str = "cli"
         raise RuntimeError("every committee member failed: " + "; ".join(errors.values()))
 
     review = master_review(cfg, filename, code, members)
+    for member in members:
+        if member.ok and member.reply:
+            review.usage[member.model_id] = (
+                member.reply.input_tokens,
+                member.reply.output_tokens,
+            )
     issues = publishable(cfg, review.issues)
     suppressed = len(review.issues) - len(issues)
 
@@ -107,6 +113,8 @@ def review_source(cfg: Config, filename: str, code: str, *, surface: str = "cli"
         elapsed_ms=telemetry.now_ms() - started,
         lead_model=cfg.master,
         reviewers=cfg.committee,
+        usage=review.usage,
+        prices=cfg.prices,
     )
     return result
 

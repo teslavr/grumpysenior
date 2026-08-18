@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "grumpysenior": {
+      "command": "grumpy",
+      "args": ["mcp"]
+    }
+  }
+}

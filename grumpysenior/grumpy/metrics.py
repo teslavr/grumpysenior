@@ -31,6 +31,10 @@ class Metrics:
     runs_per_user: float = 0.0
     repeat_user_rate: float = 0.0
     median_seconds: float = 0.0
+    total_cost: float = 0.0
+    median_cost: float = 0.0
+    cost_per_finding: float = 0.0
+    priced_runs: int = 0
     per_reviewer: dict = field(default_factory=dict)
     failures: Counter = field(default_factory=Counter)
     severity: Counter = field(default_factory=Counter)
@@ -75,9 +79,22 @@ def compute(events: list[dict]) -> Metrics:
 
     m.median_seconds = round(_median([e.get("elapsed_ms", 0) / 1000 for e in events]), 1)
 
+    # Only events that actually carry cost data. Averaging in records written
+    # before token tracking existed would quietly halve every figure.
+    costs = [c for c in (e.get("cost_usd", 0.0) for e in events) if c > 0]
+    priced_issues = sum(
+        e.get("issues_published", 0) for e in events if e.get("cost_usd", 0.0) > 0
+    )
+    m.total_cost = round(sum(costs), 4)
+    m.median_cost = round(_median(costs), 4)
+    m.priced_runs = len(costs)
+    if priced_issues:
+        m.cost_per_finding = round(sum(costs) / priced_issues, 4)
+
     seated: Counter = Counter()
     raised: Counter = Counter()
     failed: Counter = Counter()
+    spend: Counter = Counter()
     for e in events:
         for model in e.get("reviewers", []):
             seated[model] += 1
@@ -86,6 +103,8 @@ def compute(events: list[dict]) -> Metrics:
         for model, reason in (e.get("reviewers_failed") or {}).items():
             failed[model] += 1
             m.failures[reason] += 1
+        for model, tok in (e.get("tokens") or {}).items():
+            spend[model] += tok.get("in", 0) + tok.get("out", 0)
         for level, count in (e.get("severity") or {}).items():
             m.severity[level] += count
         m.surfaces[e.get("surface", "unknown")] += 1
@@ -101,6 +120,7 @@ def compute(events: list[dict]) -> Metrics:
             "findings_per_run": round(raised.get(model, 0) / seated[model], 2) if seated[model] else 0.0,
             "failures": failed.get(model, 0),
             "failure_rate": round(failed.get(model, 0) / seated[model], 2) if seated[model] else 0.0,
+            "tokens": spend.get(model, 0),
         }
         for model in seated
     }

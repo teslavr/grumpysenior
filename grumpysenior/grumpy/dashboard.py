@@ -119,6 +119,18 @@ def render(m: Metrics) -> str:
     p.append(_card(f"{m.median_seconds}s", "Median duration", "Wall clock, full reviewer set."))
     p.append("</div>")
 
+    p.append("<h2>Cost</h2><div class='grid'>")
+    p.append(_card(f"${m.median_cost:.4f}", "Median per review",
+                   "At the rates configured in .grumpy.yml. Bedrock pricing varies by region, "
+                   "so treat this as arithmetic on your own numbers, not a quote."))
+    p.append(_card(f"${m.cost_per_finding:.4f}", "Per finding published",
+                   "Total spend divided by findings that reached the reader."))
+    p.append(_card(f"${m.total_cost:.2f}", "Total recorded",
+                   f"Across the {m.priced_runs} review(s) that carry token data."))
+    p.append(_card(f"{sum(d.get('tokens', 0) for d in m.per_reviewer.values()):,}", "Reviewer tokens",
+                   "Input plus output, reviewers only."))
+    p.append("</div>")
+
     p.append("<h2>Adoption and retention</h2><div class='grid'>")
     p.append(_card(m.users, "Installs", "Distinct anonymous install identifiers."))
     p.append(_card(m.runs, "Reviews", "Total reviews run."))
@@ -133,7 +145,7 @@ def render(m: Metrics) -> str:
         p.append("<h2>Reviewer performance</h2><div class='scroll'><table>")
         p.append("<tr><th>Model</th><th class='num'>Runs</th><th class='num'>Findings</th>"
                  "<th class='num'>Per run</th><th class='num'>Failures</th>"
-                 "<th>Relative yield</th></tr>")
+                 "<th class='num'>Tokens</th><th>Relative yield</th></tr>")
         peak = max((d["findings_per_run"] for d in m.per_reviewer.values()), default=1) or 1
         for model, d in sorted(m.per_reviewer.items(),
                                key=lambda kv: kv[1]["findings_per_run"], reverse=True):
@@ -143,6 +155,7 @@ def render(m: Metrics) -> str:
                 f"<td class='num'>{d['runs']}</td><td class='num'>{d['findings']}</td>"
                 f"<td class='num'>{d['findings_per_run']}</td>"
                 f"<td class='num'>{d['failures']}</td>"
+                f"<td class='num'>{d.get('tokens', 0):,}</td>"
                 f"<td><div class='bar'><i style='width:{width}%'></i></div></td></tr>"
             )
         p.append("</table></div>")

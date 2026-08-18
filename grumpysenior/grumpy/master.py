@@ -107,6 +107,7 @@ class Review:
     committee_size: int
     method: str  # "master" | "fallback"
     error: str | None = None
+    usage: dict = field(default_factory=dict)  # model_id -> (in, out)
 
 
 # ---------------------------------------------------------------- fallback --
@@ -190,6 +191,7 @@ def review(cfg, filename: str, code: str, members: list[PanelMember]) -> Review:
             max_tokens=cfg.max_tokens,
         )
         data, fixed_code = split_reply(reply.text)
+        don_usage = {cfg.master: (reply.input_tokens, reply.output_tokens)}
     except (ModelError, Exception) as exc:
         issues = _fallback_groups(findings)
         issues.sort(key=lambda i: (i.agreement, SEVERITY_ORDER.get(i.severity, 0)), reverse=True)
@@ -238,6 +240,7 @@ def review(cfg, filename: str, code: str, members: list[PanelMember]) -> Review:
         fixed_code=fixed_code,
         committee_size=live,
         method="master",
+        usage=don_usage,
     )
 
 

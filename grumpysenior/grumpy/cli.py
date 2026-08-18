@@ -145,12 +145,14 @@ def cmd_stats(args) -> int:
           f"suppressed {m.suppressed_by_lead}")
     print(f"fixes proposed {pct(m.fix_offer_rate)} · verified {pct(m.fix_verified_rate)} · "
           f"median {m.median_seconds}s")
+    print(f"spend ${m.total_cost:.4f} total · ${m.median_cost:.4f} median per review · "
+          f"${m.cost_per_finding:.4f} per finding")
     if m.per_reviewer:
-        print("\nreviewer                                     runs  finds  /run  fail")
+        print("\nreviewer                                     runs  finds  /run  fail    tokens")
         for model, d in sorted(m.per_reviewer.items(),
                                key=lambda kv: kv[1]["findings_per_run"], reverse=True):
             print(f"  {model:<42} {d['runs']:>4} {d['findings']:>6} "
-                  f"{d['findings_per_run']:>5} {d['failures']:>5}")
+                  f"{d['findings_per_run']:>5} {d['failures']:>5} {d.get('tokens', 0):>9,}")
     if m.failures:
         print("\nfailures: " + ", ".join(f"{k}={v}" for k, v in m.failures.most_common()))
     return 0
