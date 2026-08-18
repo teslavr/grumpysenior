@@ -1,0 +1,31 @@
+# Copy this into any repo you want reviewed.
+name: GrumpySenior
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write   # the bot proposes; you merge
+  id-token: write        # for OIDC auth to AWS, below
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Preferred: no long-lived keys in the repo.
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_BEDROCK_ROLE_ARN }}
+          aws-region: us-east-1
+      # Simpler alternative — replace the step above with repo secrets:
+      #   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY as env on the step below.
+
+      - uses: ./grumpysenior   # or: your-org/grumpysenior@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          aws-region: us-east-1
+          fail-on: never   # comment only; never block the merge on an AI opinion

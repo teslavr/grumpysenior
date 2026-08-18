@@ -1,0 +1,29 @@
+name: GrumpySenior
+description: A committee of senior models from other vendors reviews your PR. Yours consolidates.
+inputs:
+  aws-region:
+    description: Bedrock region
+    default: us-east-1
+  master:
+    description: The model you write code with
+    required: false
+  max-files:
+    description: Files to review per PR; the rest are named in the comment
+    default: "5"
+  fail-on:
+    description: Fail the check at this severity (low|medium|high|never)
+    default: never
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - shell: bash
+      run: pip install --quiet "${{ github.action_path }}"
+    - shell: bash
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+      run: |
+        grumpy ${{ inputs.master && format('--master {0}', inputs.master) || '' }} \
+          review-pr --max-files "${{ inputs.max-files }}" --fail-on "${{ inputs.fail-on }}"

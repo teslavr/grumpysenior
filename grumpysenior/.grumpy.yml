@@ -1,0 +1,21 @@
+# The only question that matters: which model do you write code with?
+# That one becomes the master. The committee is then assembled from top models
+# of *other* vendors, because a model cannot see its own blind spots.
+master: us.anthropic.claude-opus-4-6-v1
+
+# Leave empty to auto-assemble. Override when you want specific reviewers.
+# committee:
+#   - us.meta.llama4-maverick-17b-instruct-v1:0
+#   - us.mistral.pixtral-large-2502-v1:0
+#   - us.amazon.nova-premier-v1:0
+
+region: us-east-1
+
+# How many committee members must agree before the master loses the right to
+# suppress a finding. This is the whole safety property -- lower it at your peril.
+consensus_floor: 2
+
+# Optional: a command run against the proposed fix before it is offered.
+# verify_command: "python -m py_compile"
+
+tone: "Sicilian-American wiseguy of the old school: dry, theatrical, faintly weary. Never threatening, never imprecise."

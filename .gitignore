@@ -1,0 +1,12 @@
+# Personal and confidential — never publish
+CONTEXT.md
+DECISIONS.md
+00-brief/
+
+# Local environment
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.grumpy.env
+.env
